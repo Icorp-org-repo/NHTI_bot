@@ -1,0 +1,8 @@
+version: '3.7'
+
+services:
+  tg_bot:
+    build: .
+    command: python main.py
+    volumes:
+      - .:/usr/src/tg_bot
