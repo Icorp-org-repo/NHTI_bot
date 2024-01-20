@@ -20,6 +20,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove, ContentType
 from aiogram.utils.callback_data import CallbackData
 import config
+import app
 
 storage = MemoryStorage()
 bot = Bot(token=config.BOT_TOKEN)
