@@ -13,6 +13,10 @@ class Q:
         self.separator = exp_type
         self._params = kwargs
 
+    # TODO: добавить add или extend
+    def extend(self, **kwargs):
+        self._params = self._params | kwargs
+
     def __str__(self):
         kv_pairs = [f'{k} = {v}' for k, v in self._params.items()]
         return f' {self.separator} '.join(kv_pairs)
@@ -97,9 +101,8 @@ class Where(BaseExp):
     def __init__(self, exp_type=AND, **kwargs):
         self._q = Q(exp_type=exp_type, **kwargs)
 
-    def add(self, exp_type=AND, **kwargs):
-        self._q = Q(exp_type=exp_type, **kwargs)
-        return self._q
+    def add(self, **kwargs):
+        self._q.extend(**kwargs)
 
     def line(self):
         return str(self._q)
@@ -109,8 +112,8 @@ class Where(BaseExp):
 
 
 class Query:
-    def __init__(self):
-        self._data = {'select': Select(), 'from': From(), 'where': Where()}
+    def __init__(self, exp_type=AND):
+        self._data = {'select': Select(), 'from': From(), 'where': Where(exp_type)}
 
     def SELECT(self, *args):
         self._data['select'].add(*args)
@@ -120,8 +123,8 @@ class Query:
         self._data['from'].add(*args)
         return self
 
-    def WHERE(self, exp_type=AND, **kwargs):
-        self._data['where'].add(exp_type=exp_type, **kwargs)
+    def WHERE(self, **kwargs):
+        self._data['where'].add(**kwargs)
         return self
 
     def _line(self, key):
@@ -138,5 +141,5 @@ class Query:
 
 if __name__ == '__main__':
     q = Query()
-    q.SELECT('age', 'all').FROM('abs').WHERE(id=1, k='Asdf')
+    q.SELECT('age', 'all').FROM('abs').FROM('Asdf').WHERE(a=1).WHERE(b='dfsad')
     print(q)
