@@ -14,25 +14,45 @@
 # ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⣀⠀⣿⣿⠀⣀⣤⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 # ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 
-from aiogram import Bot, Dispatcher, types, executor
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.dispatcher import FSMContext
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove, ContentType
-from aiogram.utils.callback_data import CallbackData
-import config
-
-storage = MemoryStorage()
-bot = Bot(token=config.BOT_TOKEN)
-dp = Dispatcher(bot=bot, storage=storage)
+from aiogram import executor
 
 
-@dp.message_handler()
-async def hello_handler(message: types.Message) -> None:
-    await bot.send_message(message.chat.id, 'Привет')
+async def on_start(dp):
+    '''
+    Запуск при старте
+    :param dp: Диспетчер
+    :return: None
+    '''
+    import filters
+    filters.setup(dp)
+
+    import middlewares
+    middlewares.setup(dp)
+
+    from loader import db
+    from utils.db_api.db_gino import on_startup
+    print('Подключение к PostgreSQL')
+    await on_startup(dp)
+    # print('Удаление всех данных')
+    # await db.gino.drop_all()
+    print('Создания таблиц')
+    await db.gino.create_all()
+
+
+    # Отправка сообщение о запуске
+    from utils.notify_admins import on_startup_notify
+    await on_startup_notify(dp)
+
+    # Установка комманд
+    # from utils.set_bot_commands import set_default_commands
+    # await set_default_commands(dp)
+
+    print('Бот запущен')
+
 
 if __name__ == "__main__":
+    from handlers import dp
     executor.start_polling(
         dispatcher=dp,
-        skip_updates=True,
+        on_startup=on_start
     )
-    input("Введи что угодно");

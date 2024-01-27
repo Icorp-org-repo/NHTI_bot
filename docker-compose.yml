@@ -6,3 +6,12 @@ services:
     command: python main.py
     volumes:
       - .:/usr/src/tg_bot
+  DB:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: "gino"
+      POSTGRES_USER: "TG_admin"
+      POSTGRES_PASSWORD: "DFkdfi(33aW"
+      PGDATA: "/data/postgres"
+    ports:
+      - "5433:5432"
